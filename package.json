@@ -28,7 +28,8 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.1",
     "resend": "^6.9.1",
-    "vite": "4.4.9"
+    "vite": "4.4.9",
+    "esbuild": "0.21.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
