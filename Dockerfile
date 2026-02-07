@@ -6,23 +6,18 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
-# Remove old modules & lockfile to prevent esbuild/rollup mismatch
+# Clean install to avoid esbuild/rollup issues
 RUN rm -rf node_modules package-lock.json
-
-# Install dependencies fresh
 RUN npm install
 
-# Copy all source code
+# Copy source code
 COPY . .
 
-# Fix Vite/esbuild permission issue
+# Ensure Vite & esbuild binaries are executable
 RUN chmod +x ./node_modules/.bin/vite
 RUN chmod +x ./node_modules/.bin/esbuild
 
-# Optional: check esbuild version
-RUN npx esbuild --version
-
-# Build the Vite project
+# Build the project
 RUN npm run build
 
 # ---------- Production Stage ----------
@@ -30,6 +25,9 @@ FROM nginx:alpine
 
 # Copy build output
 COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy Nginx config
+COPY default.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80
