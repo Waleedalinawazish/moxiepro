@@ -3,14 +3,14 @@ FROM node:20-bullseye AS builder
 
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package files
 COPY package*.json ./
 
-# Clean install to avoid esbuild/rollup issues
+# Clean install to prevent esbuild/rollup errors
 RUN rm -rf node_modules package-lock.json
 RUN npm install
 
-# Copy source code
+# Copy all source code
 COPY . .
 
 # Ensure Vite & esbuild binaries are executable
@@ -23,10 +23,10 @@ RUN npm run build
 # ---------- Production Stage ----------
 FROM nginx:alpine
 
-# Copy build output
+# Copy build output from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy Nginx config
+# Copy custom Nginx config
 COPY default.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
