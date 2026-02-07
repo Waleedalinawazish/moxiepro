@@ -1,24 +1,32 @@
 # ---------- Build Stage ----------
-FROM node:20-alpine AS build
+FROM node:20-alpine AS builder
 
+# Set working directory
 WORKDIR /app
 
+# Copy package.json and package-lock.json
 COPY package*.json ./
-RUN npm install --include=dev
 
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the app
 COPY . .
-RUN npm run build
+
+# Make vite executable (fix permission issue on Alpine)
+RUN chmod +x ./node_modules/.bin/vite
+
+# Build the project using npm exec
+RUN npm exec vite build
 
 # ---------- Production Stage ----------
-FROM node:20-alpine
+FROM nginx:alpine
 
-WORKDIR /app
+# Copy the build output from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-COPY --from=build /app/dist ./dist
-COPY package*.json ./
+# Expose port 80
+EXPOSE 80
 
-RUN npm install --omit=dev
-
-EXPOSE 4173
-
-CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "4173"]
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
